@@ -1,0 +1,111 @@
+{
+  "name": "google-reader-api",
+  "version": "0.1.0",
+  "description": "A Google Reader API package that implements some interfaces. 一个 Google Reader API 的封装包，实现了部分接口。",
+  "author": "CaoMeiYouRen",
+  "private": false,
+  "license": "MIT",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "lint": "cross-env NODE_ENV=production eslint src --fix --ext .ts,.js,.cjs,.mjs",
+    "release": "semantic-release",
+    "prebuild": "rimraf dist",
+    "build": "cross-env NODE_ENV=production tsup",
+    "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
+    "dev:tsup": "cross-env NODE_ENV=development tsup --watch",
+    "start": "node ./dist/index",
+    "commit": "cz",
+    "prepare": "husky install",
+    "test": "jest --config jest.config.ts",
+    "test:coverage": "jest --config jest.config.ts --coverage"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.6.1",
+    "@commitlint/config-conventional": "^18.6.3",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/debug": "^4.1.12",
+    "@types/jest": "^29.5.12",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.5.4",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "commitizen": "^4.3.0",
+    "conventional-changelog-cli": "^5.0.0",
+    "conventional-changelog-cmyr-config": "^2.1.2",
+    "cross-env": "^7.0.3",
+    "cz-conventional-changelog": "^3.3.0",
+    "cz-conventional-changelog-cmyr": "^1.1.1",
+    "debug": "^4.3.6",
+    "eslint": "^8.57.0",
+    "eslint-config-cmyr": "^1.1.31",
+    "eslint-plugin-import": "^2.30.0",
+    "husky": "^9.1.5",
+    "jest": "^29.7.0",
+    "lint-staged": "^15.2.10",
+    "rimraf": "^6.0.1",
+    "semantic-release": "21.0.1",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.2.4",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog-cmyr"
+    }
+  },
+  "changelog": {
+    "language": "zh"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "npm run lint",
+      "git add"
+    ]
+  },
+  "keywords": [
+    "Google Reader",
+    "Google Reader API",
+    "GoogleReader"
+  ],
+  "homepage": "https://github.com/CaoMeiYouRen/google-reader-api#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CaoMeiYouRen/google-reader-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CaoMeiYouRen/google-reader-api/issues"
+  },
+  "dependencies": {
+    "await-to-js": "^3.0.0",
+    "isomorphic-unfetch": "^4.0.2",
+    "lodash-es": "^4.17.21",
+    "tslib": "^2.7.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "compare-func": "^2.0.0"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "commonjs"
+}
