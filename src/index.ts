@@ -1,4 +1,3 @@
-import { } from 'lodash'
 import fetch from 'isomorphic-unfetch'
 import { ajax, AjaxConfig } from './utils/ajax'
 import { EditSubscriptionData, StreamContent, StreamContentsData, SubscriptionListResponse, TagListResponse } from './types'
