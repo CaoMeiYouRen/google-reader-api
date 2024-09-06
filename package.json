@@ -41,6 +41,7 @@
     "@semantic-release/git": "^10.0.1",
     "@types/debug": "^4.1.12",
     "@types/jest": "^29.5.12",
+    "@types/lodash": "^4.17.7",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.5.4",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
@@ -96,7 +97,7 @@
   "dependencies": {
     "await-to-js": "^3.0.0",
     "isomorphic-unfetch": "^4.0.2",
-    "lodash-es": "^4.17.21",
+    "lodash": "^4.17.21",
     "tslib": "^2.7.0"
   },
   "pnpm": {
