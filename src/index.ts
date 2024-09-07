@@ -1,6 +1,6 @@
 import fetch from 'isomorphic-unfetch'
-import { ajax, AjaxConfig } from './utils/ajax'
-import { EditSubscriptionData, StreamContent, StreamContentsData, SubscriptionListResponse, TagListResponse } from './types'
+import { AjaxConfig } from './utils/ajax'
+import { EditSubscriptionData, QuickAddResponse, StreamContent, StreamContentsData, SubscriptionListResponse, TagListResponse, UnreadCountResponse, UserInfo } from './types'
 
 export class GoogleReaderApi {
     private email: string
@@ -33,30 +33,31 @@ export class GoogleReaderApi {
         const { url, query = {}, data = {}, headers = {}, method = 'GET', baseURL = this.apiBaseUrl, timeout = 10000 } = config
         const _url = new URL(baseURL ? baseURL + url : url, baseURL)
         const _query = new URLSearchParams(query)
-        _url.searchParams.forEach((value, key) => {
-            _query.append(key, value)
-        })
         _url.search = _query.toString()
-        // 判断 authToken
-        if (!this.authToken) {
-            this.authToken = await this.clientLogin()
-        }
-        // 如果是 post 请求，判断 postToken
-        if (method === 'POST' && !this.postToken) {
-            this.postToken = await this.getPostToken(depth + 1)
+        if (url !== '/accounts/ClientLogin') {
+            // 判断 authToken
+            if (!this.authToken) {
+                this.authToken = await this.clientLogin(depth + 1)
+            }
+            headers['Authorization'] = `GoogleLogin auth=${this.authToken}`
+            // 如果是 post 请求，判断 postToken
+            if (method === 'POST' && !this.postToken) {
+                this.postToken = await this.getPostToken(depth + 1)
+            }
         }
 
         const _headers = {
-            'Content-Type': 'application/json',
-            Authorization: `GoogleLogin auth=${this.authToken}`,
-            Accept: 'application/json',
+            // 'Content-Type': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            // Authorization: `GoogleLogin auth=${this.authToken}`,
+            // Accept: 'application/json',
             ...headers,
         }
 
         let body = data
         if (['GET', 'HEAD'].includes(method)) {
             body = null
-        } else {
+        } else if (_headers['Content-Type'] === 'application/json') {
             body = JSON.stringify(data)
         }
 
@@ -72,6 +73,12 @@ export class GoogleReaderApi {
         ])
 
         if (!response.ok) {
+            console.log({
+                url: _url.toString(),
+                method,
+                headers: _headers,
+                body,
+            })
             console.error(await response.text())
             if (response.status === 401) {
                 // 如果 401，且  X-Reader-Google-Bad-Token: true，则更新 postToken
@@ -116,8 +123,7 @@ export class GoogleReaderApi {
      * @author CaoMeiYouRen
      * @date 2024-09-07
      */
-    async clientLogin() {
-        const url = '/accounts/ClientLogin'
+    async clientLogin(depth = 0) {
         const headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
@@ -125,13 +131,13 @@ export class GoogleReaderApi {
             Email: this.email,
             Passwd: this.password,
         })
-        const response = await ajax<string>({
+        const response = await this.makeApiRequest<string>({
             baseURL: this.baseUrl,
-            url,
+            url: '/accounts/ClientLogin',
             method: 'POST',
             headers,
             data,
-        })
+        }, depth + 1)
         const authLine = response.split('\n').find((line) => line.startsWith('Auth='))
         if (!authLine) {
             throw new Error('AuthToken not found in response')
@@ -153,6 +159,91 @@ export class GoogleReaderApi {
             method: 'GET',
         }, depth + 1)
         return postToken
+    }
+
+    /**
+     * Returns various details about the user.
+     * 返回有关用户的各种详细信息。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-07
+     */
+    async getUserInfo() {
+        const user = await this.makeApiRequest<string>({
+            url: '/user-info',
+            method: 'GET',
+            query: {
+                output: 'json',
+            },
+        })
+        return JSON.parse(user) as UserInfo
+    }
+
+    /**
+     * Returns all streams that have unread items, along with their unread count and the timestamp of their most recent item.
+     * 返回具有未读项目的所有流，以及它们的未读计数和最新项目的时间戳
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-07
+     */
+    async getUnreadCounts() {
+        const response = await this.makeApiRequest<UnreadCountResponse>({
+            url: '/unread-count',
+            method: 'GET',
+            query: {
+                output: 'json',
+            },
+        })
+        return response
+    }
+
+    /**
+     * Deletes a category or a tag. Feeds that belong to the category being deleted are moved to the top-level.
+     * 删除类别或标记。属于要删除的类别的源将移动到顶级。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-07
+     * @param category
+     */
+    async disableTag(category: string | number) {
+        const body = new URLSearchParams()
+        body.append('T', this.postToken)
+        if (typeof category === 'number') {
+            body.append('s', category.toString())
+        } else if (typeof category === 'string') {
+            body.append('t', category)
+        }
+        const response = await this.makeApiRequest<'OK'>({
+            url: '/disable-tag',
+            method: 'POST',
+            data: body,
+        })
+        return response // OK
+    }
+
+    /**
+     * Renames a category. 重命名类别
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-07
+     * @param category
+     * @param newLabelName
+     */
+    async renameTag(category: string | number, newLabelName: string) {
+        const body = new URLSearchParams()
+        body.append('T', this.postToken)
+        body.append('dest', newLabelName)
+        if (typeof category === 'number') {
+            body.append('s', category.toString())
+        } else if (typeof category === 'string') {
+            body.append('t', category)
+        }
+        const response = await this.makeApiRequest<'OK'>({
+            url: '/rename-tag',
+            method: 'POST',
+            data: body,
+        })
+        return response // OK
     }
 
     /**
@@ -183,9 +274,6 @@ export class GoogleReaderApi {
      */
     async editSubscription(data: EditSubscriptionData) {
         const { action, streamId, title, categoryId, addCategory = true } = data as any
-        const headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
         const body = new URLSearchParams()
         body.append('ac', action)
         body.append('s', streamId)
@@ -212,14 +300,88 @@ export class GoogleReaderApi {
                 }
             }
         }
-        const response = await this.makeApiRequest<string>({
+        const response = await this.makeApiRequest<'OK'>({
             url: '/subscription/edit',
             method: 'POST',
-            headers,
             data: body,
         })
         return response // OK
     }
+
+    /**
+     * Adds a new subscription (feed), given only the feed’s URL.
+     * 添加新订阅 （源），仅给定源的 URL。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     * @param feedUrl
+     */
+    async quickAddSubscription(feedUrl: string) {
+        const body = new URLSearchParams({
+            quickadd: feedUrl,
+            T: this.postToken,
+        })
+        const response = await this.makeApiRequest<QuickAddResponse>({
+            url: '/subscription/quickadd',
+            method: 'POST',
+            data: body,
+        })
+        return response
+    }
+
+    /**
+     * Returns the list of subscriptions in OPML (XML) format.
+     * 返回 OPML （XML） 格式的订阅列表。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     */
+    async exportSubscriptions() {
+        const response = await this.makeApiRequest<string>({
+            url: '/subscription/export',
+        })
+        return response
+    }
+
+    /**
+     * Imports all subscriptions from an OPML file.
+     * 从 OPML 文件导入所有订阅。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     * @param opmlContent
+     */
+    async importSubscriptions(opmlContent: string) {
+        const headers = {
+            'Content-Type': 'text/xml',
+        }
+        const response = await this.makeApiRequest<string>({
+            url: '/subscription/export',
+            headers,
+            method: 'POST',
+            data: opmlContent,
+        })
+        return response
+    }
+
+    /**
+     * Returns whether the user is subscribed to a given feed.
+     * 返回用户是否订阅了给定的订阅源。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     * @param streamId
+     */
+    async checkSubscription(streamId: string) {
+        const response = await this.makeApiRequest<'true' | 'false'>({
+            url: '/subscribed',
+            query: {
+                s: streamId,
+            },
+        })
+        return response === 'true'
+    }
+
     /**
      * Returns paginated, detailed items for a given stream.
      * 返回给定流的分页详细项目。
@@ -230,9 +392,6 @@ export class GoogleReaderApi {
      */
     async getStreamContents(data: StreamContentsData) {
         const { streamId, sortCriteria, itemsPerPage, continuation, excludeStreamId, includeStreamId, olderThan, newerThan } = data
-        const headers = {
-            Accept: 'application/json',
-        }
         const searchParams = new URLSearchParams()
         searchParams.append('output', 'json')
         if (sortCriteria) {
@@ -260,7 +419,6 @@ export class GoogleReaderApi {
             url: `/stream/contents/${streamId}`,
             query: searchParams,
             method: 'GET',
-            headers,
         })
         return response
     }

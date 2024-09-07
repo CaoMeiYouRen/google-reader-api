@@ -1,3 +1,10 @@
+export interface UserInfo {
+    userId: string
+    userName: string
+    userProfileId: string
+    userEmail: string
+}
+
 export interface Subscription {
     title: string
     firstitemmsec: string
@@ -94,4 +101,21 @@ export interface Tag {
 
 export interface TagListResponse {
     tags: Tag[]
+}
+
+export interface Unreadcount {
+    count: number
+    id: string
+    newestItemTimestampUsec: string
+}
+
+export interface UnreadCountResponse {
+    max: number
+    unreadcounts: Unreadcount[]
+}
+
+export interface QuickAddResponse {
+    numResults: number
+    query: string
+    streamId: string
 }
