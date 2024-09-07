@@ -1,6 +1,6 @@
 import fetch from 'isomorphic-unfetch'
 import { AjaxConfig } from './utils/ajax'
-import { EditSubscriptionData, QuickAddResponse, StreamContent, StreamContentsData, SubscriptionListResponse, TagListResponse, UnreadCountResponse, UserInfo } from './types'
+import { EditSubscriptionData, QuickAddResponse, StreamContent, StreamContentsData, StreamItemCountData, StreamItemCountResponse, StreamItemIdsData, StreamItemsIdsResponse, SubscriptionListResponse, TagListResponse, UnreadCountResponse, UserInfo } from './types'
 
 export class GoogleReaderApi {
     private email: string
@@ -73,12 +73,12 @@ export class GoogleReaderApi {
         ])
 
         if (!response.ok) {
-            console.log({
-                url: _url.toString(),
-                method,
-                headers: _headers,
-                body,
-            })
+            // console.log({
+            //     url: _url.toString(),
+            //     method,
+            //     headers: _headers,
+            //     body,
+            // })
             console.error(await response.text())
             if (response.status === 401) {
                 // 如果 401，且  X-Reader-Google-Bad-Token: true，则更新 postToken
@@ -104,16 +104,16 @@ export class GoogleReaderApi {
         if (type && type.startsWith('application/json')) {
             return response.json() as T
         }
-        if (type && type.startsWith('text/')) {
+        if (type && (type.startsWith('text/') || type.startsWith('application/xml'))) {
             return response.text() as T
         }
         if (type && type.startsWith('multipart/form-data')) {
             return response.formData() as T
         }
         if (type && type.startsWith('application/octet-stream')) {
-            return response.blob() as T
+            return response.arrayBuffer() as T
         }
-        return response.arrayBuffer() as T
+        return response.text() as T
     }
 
     /**
@@ -367,7 +367,7 @@ export class GoogleReaderApi {
     /**
      * Returns whether the user is subscribed to a given feed.
      * 返回用户是否订阅了给定的订阅源。
-     *
+     * !FreshRSS 中未实现
      * @author CaoMeiYouRen
      * @date 2024-09-08
      * @param streamId
@@ -421,6 +421,77 @@ export class GoogleReaderApi {
             method: 'GET',
         })
         return response
+    }
+
+    /**
+     * Returns item IDs for a given stream ID.
+     * 返回给定流 ID 的项目 ID。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     * @param data
+     */
+    async getStreamItemIds(data: StreamItemIdsData) {
+        const { streamId, includeAllDirectStreamIds, itemsPerPage, continuation, excludeStreamId, includeStreamId, olderThan, newerThan } = data
+        const searchParams = new URLSearchParams()
+        searchParams.append('output', 'json')
+        searchParams.append('s', streamId)
+        if (includeAllDirectStreamIds) {
+            searchParams.append('includeAllDirectStreamIds', 'true')
+        }
+        if (itemsPerPage) {
+            searchParams.append('n', itemsPerPage.toString())
+        }
+        if (continuation) {
+            searchParams.append('c', continuation)
+        }
+        if (excludeStreamId) {
+            searchParams.append('xt', excludeStreamId)
+        }
+        if (includeStreamId) {
+            searchParams.append('it', includeStreamId)
+        }
+        if (olderThan) {
+            searchParams.append('ot', olderThan.toString())
+        }
+        if (newerThan) {
+            searchParams.append('nt', newerThan.toString())
+        }
+        const response = await this.makeApiRequest<string>({
+            url: '/stream/items/ids',
+            query: searchParams,
+            method: 'GET',
+        })
+        return JSON.parse(response) as StreamItemsIdsResponse
+    }
+
+    /**
+     * Returns the number of items in a given stream.
+     * 返回给定流中的项目数。
+     * !FreshRSS 中未实现
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     * @param streamId
+     * @param [includeLatestDate=false]
+     */
+    async getStreamItemCount(data: StreamItemCountData) {
+        const { streamId, includeLatestDate = false } = data
+        const searchParams = new URLSearchParams({
+            s: streamId,
+        })
+        if (includeLatestDate) {
+            searchParams.append('a', 'true')
+        }
+        const response = await this.makeApiRequest<string>({
+            url: '/stream/items/count',
+            query: searchParams,
+            method: 'GET',
+        })
+        const [count, date] = response.split('#')
+        return {
+            count: parseInt(count),
+            date: date ? new Date(date) : null,
+        } as StreamItemCountResponse
     }
 
     /**

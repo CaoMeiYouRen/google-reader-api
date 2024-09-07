@@ -81,6 +81,7 @@ export interface StreamContentsData {
     streamId: string
     // 排序条件。项目按日期排序（默认为降序），r=o 颠倒顺序
     sortCriteria?: 'o'
+    // 每页的项数。默认值：20。
     itemsPerPage?: number
     // 用于分页。当 FeedHQ 返回页面时，它包含一个延续键，该键可以作为 c 参数传递以提取下一页。
     continuation?: string
@@ -118,4 +119,28 @@ export interface QuickAddResponse {
     numResults: number
     query: string
     streamId: string
+}
+
+export interface itemRef {
+    id: string
+    directStreamIds?: string[]
+}
+
+export interface StreamItemsIdsResponse {
+    itemRefs: itemRef[]
+    continuation?: string
+}
+
+export type StreamItemIdsData = {
+    includeAllDirectStreamIds?: boolean
+} & Omit<StreamContentsData, 'sortCriteria'>
+
+export interface StreamItemCountData {
+    streamId: string
+    includeLatestDate?: boolean
+}
+
+export interface StreamItemCountResponse {
+    count: number
+    date?: Date
 }
