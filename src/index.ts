@@ -1,7 +1,15 @@
 import fetch from 'isomorphic-unfetch'
 import { AjaxConfig } from './utils/ajax'
-import { EditSubscriptionData, QuickAddResponse, StreamContent, StreamContentsData, StreamItemCountData, StreamItemCountResponse, StreamItemIdsData, StreamItemsIdsResponse, SubscriptionListResponse, TagListResponse, UnreadCountResponse, UserInfo } from './types'
+import { EditSubscriptionData, EditTagData, MarkAllAsReadData, QuickAddResponse, StreamContent, StreamContentsData, StreamItemContentsResponse, StreamItemCountData, StreamItemCountResponse, StreamItemIdsData, StreamItemsIdsResponse, SubscriptionListResponse, TagListResponse, UnreadCountResponse, UserInfo } from './types'
 
+/**
+ * Reference Documents/参考文档：https://feedhq.readthedocs.io/en/latest/api/reference.html
+ *
+ * @author CaoMeiYouRen
+ * @date 2024-09-08
+ * @export
+ * @class GoogleReaderApi
+ */
 export class GoogleReaderApi {
     private email: string
     private password: string
@@ -495,6 +503,29 @@ export class GoogleReaderApi {
     }
 
     /**
+     * Returns the details about requested feed items.
+     * 返回有关请求的源项的详细信息。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     * @param itemIds
+     */
+    async getStreamItemContents(itemIds: string[]) {
+        const body = new URLSearchParams()
+        body.append('T', this.postToken)
+        body.append('output', 'json')
+        itemIds.forEach((i) => {
+            body.append('i', i)
+        })
+        const response = await this.makeApiRequest<StreamItemContentsResponse>({
+            url: '/stream/items/contents',
+            method: 'POST',
+            data: body,
+        })
+        return response
+    }
+
+    /**
      * Returns the list of special tags and labels.
      * 返回特殊标签和标签的列表
      *
@@ -510,6 +541,61 @@ export class GoogleReaderApi {
             },
         })
         return tags
+    }
+
+    /**
+     *  i: ID of the item to edit. Can be repeated to edit multiple items at once.
+        i：要编辑的项的 ID。可以重复以一次编辑多个项目。
+        a: tag to add to the items. Can be repeated to add multiple tags at once.
+        A：标记以添加到项目中。可以重复以一次添加多个标签。
+        r: tag to remove from the items. Can be repeated to remove multiple tags at once.
+        r： 要从项目中删除的标签。可以重复此操作以一次删除多个标签。
+
+        Possible tags are: 可能的标记包括：
+        user/-/state/com.google/kept-unread
+        user/-/state/com.google/starred
+        user/-/state/com.google/broadcast
+        user/-/state/com.google/read
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     * @param data
+     */
+    async editTag(data: EditTagData) {
+        const { editIds, addIds, removeIds } = data
+        const body = new URLSearchParams()
+        editIds?.forEach((id) => body.append('i', id))
+        addIds?.forEach((tag) => body.append('a', tag))
+        removeIds?.forEach((tag) => body.append('r', tag))
+        const response = await this.makeApiRequest<'OK'>({
+            url: '/edit-tag',
+            method: 'POST',
+            data: body,
+        })
+        return response
+    }
+
+    /**
+     * Marks all items in a stream as read.
+     * 将流中的所有项目标记为已读。
+     *
+     * @author CaoMeiYouRen
+     * @date 2024-09-08
+     * @param data
+     */
+    async markAllAsRead(data: MarkAllAsReadData) {
+        const { streamId, timestampUsec } = data
+        const body = new URLSearchParams()
+        body.append('s', streamId)
+        if (timestampUsec) {
+            body.append('ts', timestampUsec.toString())
+        }
+        const response = await this.makeApiRequest<'OK'>({
+            url: '/mark-all-as-read',
+            method: 'POST',
+            data: body,
+        })
+        return response
     }
 
 }

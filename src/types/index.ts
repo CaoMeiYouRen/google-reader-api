@@ -144,3 +144,43 @@ export interface StreamItemCountResponse {
     count: number
     date?: Date
 }
+
+export interface Canonical {
+    href: string
+}
+export interface Origin {
+    streamId: string
+    htmlUrl: string
+    title: string
+}
+export interface Summary {
+    content: string
+}
+export interface Item {
+    id: string
+    crawlTimeMsec: string
+    timestampUsec: string
+    published: number
+    title: string
+    canonical: Canonical[]
+    alternate: Canonical[]
+    categories: string[]
+    origin: Origin
+    summary: Summary
+}
+export interface StreamItemContentsResponse {
+    id: string
+    updated: number
+    items: Item[]
+}
+
+export interface EditTagData {
+    editIds?: string[] // 要编辑的项的 ID
+    addIds?: string[] // 要添加的标签
+    removeIds?: string[] // 要删除的标签
+}
+
+export interface MarkAllAsReadData {
+    streamId: string // 流 ID
+    timestampUsec?: number // 可选的时间戳（以微秒为单位）
+}
