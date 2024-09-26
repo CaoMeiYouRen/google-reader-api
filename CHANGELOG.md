@@ -1,5 +1,12 @@
 # google-reader-api
 
+## [1.2.1](https://github.com/CaoMeiYouRen/google-reader-api/compare/v1.2.0...v1.2.1) (2024-09-26)
+
+
+### 🐛 Bug 修复
+
+* remove await-to-js and lodash dependencies from package.json and pnpm-lock.yaml ([cea6039](https://github.com/CaoMeiYouRen/google-reader-api/commit/cea6039))
+
 # [1.2.0](https://github.com/CaoMeiYouRen/google-reader-api/compare/v1.1.0...v1.2.0) (2024-09-08)
 
 
