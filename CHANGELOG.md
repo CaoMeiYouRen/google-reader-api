@@ -1,5 +1,12 @@
 # google-reader-api
 
+# [1.2.0](https://github.com/CaoMeiYouRen/google-reader-api/compare/v1.1.0...v1.2.0) (2024-09-08)
+
+
+### ✨ 新功能
+
+* added new methods to GoogleReaderApi class: getStreamItemContents, editTag, and markAllAsRead ([dab2162](https://github.com/CaoMeiYouRen/google-reader-api/commit/dab2162))
+
 # [1.1.0](https://github.com/CaoMeiYouRen/google-reader-api/compare/v1.0.0...v1.1.0) (2024-09-07)
 
 

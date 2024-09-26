@@ -1,6 +1,6 @@
 {
   "name": "google-reader-api",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A Google Reader API package that implements some interfaces. 一个 Google Reader API 的封装包，实现了部分接口。",
   "author": "CaoMeiYouRen",
   "private": false,
