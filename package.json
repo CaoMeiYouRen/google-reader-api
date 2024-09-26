@@ -96,9 +96,7 @@
     "url": "https://github.com/CaoMeiYouRen/google-reader-api/issues"
   },
   "dependencies": {
-    "await-to-js": "^3.0.0",
     "isomorphic-unfetch": "^4.0.2",
-    "lodash": "^4.17.21",
     "tslib": "^2.7.0"
   },
   "pnpm": {

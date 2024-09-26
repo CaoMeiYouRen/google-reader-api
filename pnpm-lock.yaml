@@ -11,15 +11,9 @@ importers:
 
   .:
     dependencies:
-      await-to-js:
-        specifier: ^3.0.0
-        version: 3.0.0
       isomorphic-unfetch:
         specifier: ^4.0.2
         version: 4.0.2
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       tslib:
         specifier: ^2.7.0
         version: 2.7.0
@@ -1226,10 +1220,6 @@ packages:
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
-
-  await-to-js@3.0.0:
-    resolution: {integrity: sha512-zJAaP9zxTcvTHRlejau3ZOY4V7SRpiByf3/dxx2uyKxxor19tpmpV2QRsTKikckwhaPmr2dVpxxMr7jOCYVp5g==}
-    engines: {node: '>=6.0.0'}
 
   babel-jest@29.7.0:
     resolution: {integrity: sha512-BrvGY3xZSwEcCzKvKsCi2GgHqDqsYkOP4/by5xCgIwGXQxIEh+8ew3gmrE1y7XRR6LHZIj6yLYnUi/mm2KXKBg==}
@@ -5834,8 +5824,6 @@ snapshots:
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.0.0
-
-  await-to-js@3.0.0: {}
 
   babel-jest@29.7.0(@babel/core@7.25.2):
     dependencies:
